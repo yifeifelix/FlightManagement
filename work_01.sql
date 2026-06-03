@@ -1,33 +1,12 @@
--- =============================================================================
 -- Flight Management Database — Schema Creation Script
--- =============================================================================
--- Target dialect: SQLite 3 (via Python's built-in sqlite3 module)
---
--- Notes:
---   - Tables are created in dependency order: independent tables first,
---     then tables with foreign keys.
---   - Tables are dropped in reverse order at the top, so the script is
---     idempotent (can be run repeatedly without error).
---   - SQLite uses INTEGER PRIMARY KEY AUTOINCREMENT for surrogate keys
---     (declared inline, not as a separate constraint).
---   - Foreign-key enforcement is OFF by default in SQLite. The PRAGMA below
---     turns it on for this connection. The application code must also enable
---     it on every new connection.
---   - Date/time columns use TEXT with ISO 8601 format 'YYYY-MM-DD HH:MM:SS'.
---     This is the SQLite-recommended convention and works seamlessly with
---     Python's datetime.isoformat() output.
--- =============================================================================
-
-
--- -----------------------------------------------------------------------------
 -- Enable foreign-key enforcement for this session
--- -----------------------------------------------------------------------------
+
 PRAGMA foreign_keys = ON;
 
 
--- -----------------------------------------------------------------------------
+
 -- Drop existing tables in reverse dependency order
--- -----------------------------------------------------------------------------
+
 DROP TABLE IF EXISTS pilotassignments;
 DROP TABLE IF EXISTS flights;
 DROP TABLE IF EXISTS pilots;
@@ -35,14 +14,9 @@ DROP TABLE IF EXISTS aircrafts;
 DROP TABLE IF EXISTS airports;
 
 
--- =============================================================================
+
 -- 1. airports — no foreign keys
--- =============================================================================
--- Uses the IATA three-letter code as a natural primary key, since these
--- codes are globally standardised and stable. Although the CLI presents this
--- entity to the user as "Destination Information", the table name reflects
--- the underlying domain model: an airport can serve as either departure
--- point or destination depending on the flight.
+
 -- -----------------------------------------------------------------------------
 CREATE TABLE airports (
     airport_code   TEXT     NOT NULL,
@@ -54,14 +28,9 @@ CREATE TABLE airports (
 );
 
 
--- =============================================================================
+
 -- 2. aircrafts — no foreign keys
--- =============================================================================
--- Surrogate primary key (aircraft_id) is used because registration_number,
--- although unique, can change over an aircraft's lifetime (re-registration,
--- international transfer). The UNIQUE constraint preserves business
--- uniqueness without making it the PK.
--- -----------------------------------------------------------------------------
+
 CREATE TABLE aircrafts (
     aircraft_id          INTEGER  PRIMARY KEY AUTOINCREMENT,
     registration_number  TEXT     NOT NULL,
@@ -73,14 +42,9 @@ CREATE TABLE aircrafts (
 );
 
 
--- =============================================================================
+
 -- 3. pilots — no foreign keys
--- =============================================================================
--- Same surrogate-key reasoning as aircrafts. license_number is unique but
--- not used as PK because it is a regulatory identifier that may be reissued.
--- The column "rank" is double-quoted defensively, since SQL standard
--- identifier quoting in SQLite uses double quotes (not backticks).
--- -----------------------------------------------------------------------------
+
 CREATE TABLE pilots (
     pilot_id        INTEGER  PRIMARY KEY AUTOINCREMENT,
     license_number  TEXT     NOT NULL,
@@ -97,21 +61,10 @@ CREATE TABLE pilots (
 );
 
 
--- =============================================================================
+
 -- 4. flights — depends on airports and aircrafts
--- =============================================================================
--- The composite UNIQUE constraint on (flight_number, departure_time) enforces
--- the business rule that the same flight number cannot depart at the same
--- moment twice. This is the rule that disqualified flight_number alone as
--- a candidate key during the design phase.
---
--- The CHECK constraint ensures a flight cannot depart from and arrive at
--- the same airport (a guard against data-entry mistakes).
---
--- departure_time and arrival_time use TEXT in ISO 8601 format. Stored as
--- text, lexicographic ordering equals chronological ordering, so the
--- comparison "arrival_time > departure_time" works correctly.
--- -----------------------------------------------------------------------------
+
+
 CREATE TABLE flights (
     flight_id            INTEGER  PRIMARY KEY AUTOINCREMENT,
     flight_number        TEXT     NOT NULL,
@@ -141,19 +94,10 @@ CREATE TABLE flights (
 );
 
 
--- =============================================================================
+
 -- 5. pilotassignments — depends on flights and pilots
--- =============================================================================
--- Resolves the M:N relationship "performs" from the ER diagram into a
--- relational table. The surrogate PK (assignment_id) is paired with a
--- composite UNIQUE on (flight_id, pilot_id) so the database itself enforces
--- the business rule that a pilot cannot be assigned to the same flight twice.
---
--- ON DELETE CASCADE on flight_id: if a flight record is deleted, its
--- assignments are deleted automatically. There is intentionally no CASCADE
--- on pilot_id: a pilot's departure from the company should not erase the
--- historical record of flights they operated.
--- -----------------------------------------------------------------------------
+
+
 CREATE TABLE pilotassignments (
     assignment_id   INTEGER  PRIMARY KEY AUTOINCREMENT,
     flight_id       INTEGER  NOT NULL,
@@ -173,22 +117,13 @@ CREATE TABLE pilotassignments (
 );
 
 
--- =============================================================================
+
 -- Indexes for common query patterns
--- =============================================================================
--- The PK and UNIQUE constraints above already create indexes on:
---   airports.airport_code, aircrafts.aircraft_id, aircrafts.registration_number,
---   pilots.pilot_id, pilots.license_number, flights.flight_id,
---   flights (flight_number, departure_time),
---   pilotassignments.assignment_id, pilotassignments (flight_id, pilot_id).
---
--- The indexes below cover additional access paths used by the application's
--- search and filter screens (e.g. "View Flights by Criteria", "View Pilot Schedule").
--- -----------------------------------------------------------------------------
+
 CREATE INDEX idx_flights_departure_time ON flights (departure_time);
 CREATE INDEX idx_flights_status         ON flights (status);
 CREATE INDEX idx_flights_route          ON flights (departure_airport, destination_airport);
 CREATE INDEX idx_pilotassignments_pilot ON pilotassignments (pilot_id);
--- =============================================================================
+
 -- End of schema
--- =============================================================================
+

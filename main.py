@@ -1,9 +1,7 @@
 """
 Flight Management CLI Application
-=================================
-
 A command-line interface to the Flight Management Database (SQLite).
-The first six menu options match the assignment brief exactly:
+The menu options match the assignment brief exactly:
 
     1. Add a New Flight
     2. View Flights by Criteria
@@ -11,19 +9,9 @@ The first six menu options match the assignment brief exactly:
     4. Assign Pilot to Flight
     5. View Pilot Schedule
     6. View / Update Destination Information
-
-Additional support options:
-
     7. View Summary Reports
     8. Initialise / Reset Database
     9. Exit
-
-Design notes:
-    - All database access goes through the FlightManager class.
-    - SQL is written inline in each method so each operation is readable.
-    - sqlite3.Row is used so query results can be accessed by column name.
-    - PRAGMA foreign_keys = ON is set on every connection.
-    - User input helper functions re-prompt on invalid values.
 """
 
 import sqlite3
@@ -37,9 +25,8 @@ SCHEMA_PATH = BASE_DIR / "work_01.sql"
 SEED_PATH = BASE_DIR / "work_02_seed_data.sql"
 
 
-# =============================================================================
 # Input helpers
-# =============================================================================
+
 
 def prompt_int(message, allow_blank=False):
     """Read an integer from the user, re-prompting on invalid input."""
@@ -117,9 +104,8 @@ def prompt_optional_choice(message, choices):
         print(f"  Please choose one of: {options_text}, or leave blank.")
 
 
-# =============================================================================
 # Display helpers
-# =============================================================================
+
 
 def print_table(rows, headers=None):
     """Print query result rows as an aligned text table."""
@@ -150,9 +136,8 @@ def print_table(rows, headers=None):
     print(f"  ({len(rows)} row{'s' if len(rows) != 1 else ''})")
 
 
-# =============================================================================
 # Main database class
-# =============================================================================
+
 
 class FlightManager:
     """Encapsulates all database operations for the Flight Management system."""
@@ -214,9 +199,9 @@ class FlightManager:
         print("  Database initialised successfully.")
         print_table([counts])
 
-    # -------------------------------------------------------------------------
-    # Menu option 1: Add a New Flight
-    # -------------------------------------------------------------------------
+  
+    # Menu 1: Add a New Flight
+  
 
     def add_new_flight(self):
         """Insert a new row into flights."""
@@ -275,9 +260,9 @@ class FlightManager:
             except sqlite3.IntegrityError as error:
                 self._print_integrity_error(error)
 
-    # -------------------------------------------------------------------------
-    # Menu option 2: View Flights by Criteria
-    # -------------------------------------------------------------------------
+  
+    # Menu 2: View Flights by Criteria
+   
 
     def view_flights_by_criteria(self):
         """Filter flights by destination, status, and/or departure date."""
@@ -320,9 +305,9 @@ class FlightManager:
             print()
             print_table(rows)
 
-    # -------------------------------------------------------------------------
-    # Menu option 3: Update Flight Information
-    # -------------------------------------------------------------------------
+
+    # Menu 3: Update Flight Information
+
 
     def update_flight_information(self):
         """Update the departure time or status of an existing flight."""
@@ -378,9 +363,9 @@ class FlightManager:
             except sqlite3.IntegrityError as error:
                 self._print_integrity_error(error)
 
-    # -------------------------------------------------------------------------
-    # Menu option 4: Assign Pilot to Flight
-    # -------------------------------------------------------------------------
+
+    # Menu 4: Assign Pilot to Flight
+
 
     def assign_pilot_to_flight(self):
         """Insert a row into pilotassignments."""
@@ -431,9 +416,9 @@ class FlightManager:
             except sqlite3.IntegrityError as error:
                 self._print_integrity_error(error)
 
-    # -------------------------------------------------------------------------
-    # Menu option 5: View Pilot Schedule
-    # -------------------------------------------------------------------------
+
+    # Menu 5: View Pilot Schedule
+
 
     def view_pilot_schedule(self):
         """Show all flights assigned to a given pilot."""
@@ -480,9 +465,9 @@ class FlightManager:
             print("\nAssigned flights:")
             print_table(schedule)
 
-    # -------------------------------------------------------------------------
-    # Menu option 6: View / Update Destination Information
-    # -------------------------------------------------------------------------
+
+    # Menu 6: View / Update Destination Information
+
 
     def view_update_destination(self):
         """View or update destination information in the airports table."""
@@ -564,9 +549,9 @@ class FlightManager:
             ).fetchone()
             print_table([updated])
 
-    # -------------------------------------------------------------------------
-    # Menu option 7: View Summary Reports
-    # -------------------------------------------------------------------------
+
+    # Menu 7: View Summary Reports
+
 
     def view_summary_reports(self):
         """Show aggregate reports required by the assignment."""
@@ -622,9 +607,9 @@ class FlightManager:
             print()
             print_table(rows)
 
-    # -------------------------------------------------------------------------
+
     # Error display
-    # -------------------------------------------------------------------------
+
 
     def _print_integrity_error(self, error):
         """Translate common SQLite constraint errors into clearer messages."""
@@ -647,9 +632,9 @@ class FlightManager:
             print(f"  Database rejected the operation: {error}")
 
 
-# =============================================================================
+
 # Menu loop
-# =============================================================================
+
 
 MENU_TEXT = """
 ============================================

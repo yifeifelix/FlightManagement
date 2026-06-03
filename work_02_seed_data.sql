@@ -1,33 +1,10 @@
--- =============================================================================
--- Flight Management Database - Example Records
--- =============================================================================
--- Target dialect: SQLite 3 (via Python's built-in sqlite3 module)
---
--- Data sources used for realistic flight examples:
---   - Heathrow live departures page: confirms Heathrow publishes live
---     minute-by-minute departure status information.
---   - Plane Finder Heathrow live departures/arrivals, checked on 2026-05-24:
---     used for sample flight numbers, airport codes, destinations/origins,
---     scheduled times, gates where shown, and operational statuses.
---
--- Notes:
---   - Aircraft and pilot records are demonstration data. Public flight boards
---     normally do not provide the exact pilot roster or aircraft registration
---     for each listed flight.
---   - Each flight has at least one Captain and one First Officer assignment to
---     make the demonstration data consistent with normal commercial operation.
---   - Times are stored as ISO 8601 TEXT values to match work_01.sql.
---   - For inbound/outbound flights, departure_time and arrival_time are treated
---     as normalised operational times so the schema CHECK
---     (arrival_time > departure_time) remains valid.
--- =============================================================================
+-- Flight Management Database - Example Data
 
 PRAGMA foreign_keys = ON;
 
 
--- -----------------------------------------------------------------------------
 -- Clear existing example records in reverse dependency order
--- -----------------------------------------------------------------------------
+
 DELETE FROM pilotassignments;
 DELETE FROM flights;
 DELETE FROM pilots;
@@ -38,9 +15,9 @@ DELETE FROM sqlite_sequence
 WHERE name IN ('pilotassignments', 'flights', 'pilots', 'aircrafts');
 
 
--- =============================================================================
+
 -- 1. airports
--- =============================================================================
+
 INSERT INTO airports (airport_code, airport_name, city, country) VALUES
 ('LHR', 'London Heathrow Airport', 'London', 'United Kingdom'),
 ('ABZ', 'Aberdeen International Airport', 'Aberdeen', 'United Kingdom'),
@@ -59,9 +36,9 @@ INSERT INTO airports (airport_code, airport_name, city, country) VALUES
 ('ZRH', 'Zurich Airport', 'Zurich', 'Switzerland');
 
 
--- =============================================================================
+
 -- 2. aircrafts
--- =============================================================================
+
 INSERT INTO aircrafts (aircraft_id, registration_number, model, status) VALUES
 (1,  'G-TTNA', 'Airbus A320neo', 'Active'),
 (2,  'G-TTNB', 'Airbus A320neo', 'Active'),
@@ -77,9 +54,9 @@ INSERT INTO aircrafts (aircraft_id, registration_number, model, status) VALUES
 (12, 'G-YMMR', 'Boeing 777-200ER', 'Retired');
 
 
--- =============================================================================
+
 -- 3. pilots
--- =============================================================================
+
 INSERT INTO pilots (pilot_id, license_number, first_name, last_name, "rank", phone, email, status) VALUES
 (1,  'UK-ATPL-1001', 'James',   'Walker',   'Captain',       '+44 7700 900101', 'james.walker@exampleair.test', 'On Duty'),
 (2,  'UK-ATPL-1002', 'Emily',   'Carter',   'First Officer', '+44 7700 900102', 'emily.carter@exampleair.test', 'On Duty'),
@@ -98,16 +75,9 @@ INSERT INTO pilots (pilot_id, license_number, first_name, last_name, "rank", pho
 (15, 'UK-ATPL-1015', 'Lucas',   'Scott',    'Captain',       '+44 7700 900115', 'lucas.scott@exampleair.test', 'Inactive');
 
 
--- =============================================================================
+
 -- 4. flights
--- =============================================================================
--- Outbound examples from Heathrow live departures:
---   BA1314 LHR -> ABZ, BA560 LHR -> FCO, VS47 LHR -> JFK,
---   AA81 LHR -> DFW, BA464 LHR -> MAD, LH2477 LHR -> MUC.
--- Inbound examples from Heathrow live arrivals:
---   AI133 BLR -> LHR, EI182 DUB -> LHR, FI454 KEF -> LHR,
---   BA1315 ABZ -> LHR, CA855 PEK -> LHR, QR15 DOH -> LHR.
--- -----------------------------------------------------------------------------
+
 INSERT INTO flights (
     flight_id, flight_number, departure_airport, destination_airport,
     aircraft_id, departure_time, arrival_time, gate, status
@@ -126,9 +96,9 @@ INSERT INTO flights (
 (12, 'QR15',   'DOH', 'LHR', 11, '2026-05-24 13:15:00', '2026-05-24 20:30:00', NULL,  'Landed');
 
 
--- =============================================================================
+
 -- 5. pilotassignments
--- =============================================================================
+
 INSERT INTO pilotassignments (assignment_id, flight_id, pilot_id, pilot_role) VALUES
 (1,  1,  1,  'Captain'),
 (2,  1,  2,  'First Officer'),
@@ -155,6 +125,3 @@ INSERT INTO pilotassignments (assignment_id, flight_id, pilot_id, pilot_role) VA
 (23, 12, 5,  'Captain'),
 (24, 12, 11, 'First Officer');
 
--- =============================================================================
--- End of example records
--- =============================================================================

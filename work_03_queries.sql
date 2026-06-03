@@ -1,26 +1,12 @@
--- =============================================================================
 -- Flight Management Database - Required SQL Queries
--- =============================================================================
--- Target dialect: SQLite 3 (via Python's built-in sqlite3 module)
---
--- Notes:
---   - These queries are written against the final schema in work_01.sql and
---     the example records in work_02_seed_data.sql.
---   - Literal values are used here so the script is easy to demonstrate.
---     In the Python CLI, replace these literals with parameter placeholders (?).
---   - Modification queries are followed by SELECT statements so the result of
---     each change can be checked immediately.
--- =============================================================================
+
 
 PRAGMA foreign_keys = ON;
 
 
--- =============================================================================
--- 1. Flight Retrieval
--- =============================================================================
 
--- 1.1 Retrieve flights by destination airport.
--- Example: all flights whose destination is London Heathrow (LHR).
+-- 1. Flight Retrieval
+
 SELECT
     f.flight_id,
     f.flight_number,
@@ -42,7 +28,7 @@ ORDER BY f.arrival_time;
 
 
 -- 1.2 Retrieve flights by status.
--- Example: all flights currently boarding.
+
 SELECT
     f.flight_id,
     f.flight_number,
@@ -58,7 +44,7 @@ ORDER BY f.departure_time;
 
 
 -- 1.3 Retrieve flights by departure date.
--- Example: all flights departing on 2026-05-24.
+
 SELECT
     f.flight_id,
     f.flight_number,
@@ -72,12 +58,12 @@ WHERE date(f.departure_time) = '2026-05-24'
 ORDER BY f.departure_time;
 
 
--- =============================================================================
+
 -- 2. Schedule Modification
--- =============================================================================
+
 
 -- 2.1 Update a flight's departure time.
--- Example: delay flight BA560 by changing its departure time.
+
 UPDATE flights
 SET departure_time = '2026-05-24 16:45:00'
 WHERE flight_id = 2;
@@ -95,7 +81,7 @@ WHERE flight_id = 2;
 
 
 -- 2.2 Update a flight's status.
--- Example: mark flight LH2477 as delayed.
+
 UPDATE flights
 SET status = 'Delayed'
 WHERE flight_id = 6;
@@ -112,13 +98,12 @@ FROM flights
 WHERE flight_id = 6;
 
 
--- =============================================================================
+
 -- 3. Pilot Assignment
--- =============================================================================
+
 
 -- 3.1 Assign a pilot to a flight.
--- Example: add a relief pilot to flight AA81.
--- INSERT OR IGNORE keeps the demo script repeatable if it is run more than once.
+
 INSERT OR IGNORE INTO pilotassignments (flight_id, pilot_id, pilot_role)
 VALUES (4, 14, 'Relief Pilot');
 
@@ -145,7 +130,7 @@ ORDER BY
 
 
 -- 3.2 Retrieve a pilot's schedule.
--- Example: show all flights assigned to pilot_id 1.
+
 SELECT
     p.pilot_id,
     p.first_name || ' ' || p.last_name AS pilot_name,
@@ -167,12 +152,11 @@ WHERE p.pilot_id = 1
 ORDER BY f.departure_time;
 
 
--- =============================================================================
 -- 4. Destination Management
--- =============================================================================
+
 
 -- 4.1 View destination information.
--- Example: view London Heathrow destination/airport details.
+
 SELECT
     airport_code,
     airport_name,
@@ -183,7 +167,7 @@ WHERE airport_code = 'LHR';
 
 
 -- 4.2 Update destination information.
--- Example: correct FCO from a common display name to its official airport name.
+
 UPDATE airports
 SET airport_name = 'Leonardo da Vinci-Fiumicino Airport'
 WHERE airport_code = 'FCO';
@@ -197,9 +181,9 @@ FROM airports
 WHERE airport_code = 'FCO';
 
 
--- =============================================================================
--- 5. Summary / Aggregation
--- =============================================================================
+
+-- 5. Summary report
+
 
 -- 5.1 Count the number of flights to each destination.
 SELECT
@@ -238,6 +222,3 @@ ORDER BY
     p.last_name,
     p.first_name;
 
--- =============================================================================
--- End of required queries
--- =============================================================================
